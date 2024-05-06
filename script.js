@@ -7,28 +7,36 @@ fetch("http://localhost:3000/data")
   })
   .then((data) => {
     resultData = data;
-    Updatethemessage()
+    Updatethemessage();
     console.log(resultData[1].title);
+  })
+  .catch((error) => {
+    console.error("Error fetching data:", error);
   });
 
 var helpRequested = false; // Flag to track if help has been requested
 var selectedPhoneOptionIndex = 0; // Variable to store the selected phone option index
 var selectedPeriod = 0; // Variable to store the selected installment period
 
-function Updatethemessage(){
-  options.deals.message = resultData[1].title + resultData[1].body + resultData[1].body2 + resultData[1].body3;
-  options["call us"].message = "call in this number"
+function Updatethemessage() {
+  if (!resultData) return; // Ensure resultData is available
+  // options.deals.message =
+  //   resultData[1].title +
+  //   resultData[1].body +
+  //   resultData[1].body2 +
+  //   resultData[1].body3;
+  options["call us"].message = resultData[1].body;
 }
 
 var options = {
   "call us": {
     selected: false,
-    message: "",
+    message: '',
   },
   deals: {
     selected: false,
     message:
-      "Bot: Here are some deals for you:<br>1. iPhone 15 Pro Max for $790<br>2. Samsung 24 Ultra for $590<br>3. Google Pixel 8 for $490",
+      '',
   },
   promotions: {
     selected: false,
@@ -39,9 +47,13 @@ var options = {
     message:
       "Bot: Please select a phone:<br>1. iPhone 14 Pro Max (499 KD)<br>2. Samsung 23 Ultra (399 KD)<br>3. Google Pixel (359 KD)",
   },
-  "iphone 15 pro max" :{
+  "samsung 24 ultra": {
     selected: false,
-    message : "this is the information about 15 iphone pro max >.."
+    message: "Bot: This is the promotion for Samsung 24 Ultra.",
+},
+  "iphone 15 pro max" : {
+    selected : false,
+    message : 'hi hi',
   },
   "iPhone 14 pro max": {
     selected: false,
@@ -67,7 +79,7 @@ function calculateInstallment(phoneOptionIndex, period, salary) {
   switch (phoneOptionIndex) {
     case 1:
       optionName = "iPhone 14 Pro Max";
-      price = options["iphone 14 pro max"].price;
+      price = options["iPhone 14 pro max"].price;
       break;
     case 2:
       optionName = "Samsung 23 Ultra";
@@ -102,7 +114,10 @@ function handleKeyPress(event) {
 }
 
 function sendMessage() {
-  var userInput = document.getElementById("user-input").value.trim().toLowerCase();
+  var userInput = document
+    .getElementById("user-input")
+    .value.trim()
+    .toLowerCase();
   if (userInput === "") {
     return;
   }
@@ -141,23 +156,31 @@ function sendMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
     return;
   }
+  if(userInput === "deals"){
+    var botMessageDiv = document.createElement("div");
+    botMessageDiv.className = "bot-message";
+    botMessageDiv.innerHTML =
+        resultData[1].title +
+        resultData[1].body +
+        resultData[1].body2 +
+        resultData[1].body3;
+    chatBox.appendChild(botMessageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    return;
+  }else if(userInput === "Samsung 24 Ultra" && options.deals.selected){
+    var phoneMessageDiv = document.createElement("div");
+    phoneMessageDiv.className = "bot-message";
+    phoneMessageDiv.innerHTML = options["samsung 24 ultra"].message;
+    chatBox.appendChild(phoneMessageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return;
+  }
   
-  if (options[userInput] && !options[userInput].selected) {
-    options[userInput].selected = true;
-    if (userInput === "iphone 15 pro max" && options.deals.selected) {
-      var iphoneMessageDiv = document.createElement("div");
-      iphoneMessageDiv.className = "bot-message";
-      iphoneMessageDiv.innerHTML = "";
-      chatBox.appendChild(iphoneMessageDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    } 
-    
+  
+    if (options[userInput] && !options[userInput].selected) {
     if (userInput === "installment") {
-      var botMessageDiv = document.createElement("div");
-      botMessageDiv.className = "bot-message";
-      botMessageDiv.innerHTML = options[userInput].message;
-      chatBox.appendChild(botMessageDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      handleInstallmentOption();
       return;
     } else if (options[userInput].price) {
       selectedPhoneOptionIndex = options[userInput].index;
@@ -190,7 +213,6 @@ function sendMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
     return;
   }
-
   if (selectedPhoneOptionIndex && selectedPeriod && !isNaN(userInput)) {
     var salary = parseFloat(userInput);
     var installmentMessage = calculateInstallment(
@@ -203,24 +225,41 @@ function sendMessage() {
     botMessageDiv.innerHTML = installmentMessage;
     chatBox.appendChild(botMessageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
+    // Reset all conversation variables after sending salary info
+    selectedPhoneOptionIndex = 0;
+    selectedPeriod = 0;
+    helpRequested = false; // Reset help flag as well
+    // Reset the 'selected' property of all options to false
+    Object.keys(options).forEach((key) => {
+      options[key].selected = false;
+    });
     return;
   }
-
   var botMessageDiv = document.createElement("div");
   botMessageDiv.className = "bot-message";
   botMessageDiv.innerHTML = "Bot: Please choose from the menu.";
   chatBox.appendChild(botMessageDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-
-
+function handleInstallmentOption() {
+  // Display the installment message
+  var botMessageDiv = document.createElement("div");
+  botMessageDiv.className = "bot-message";
+  botMessageDiv.innerHTML = options.installment.message;
+  document.getElementById("chat-box").appendChild(botMessageDiv);
+  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
+  // Set the installment option as selected
+  options.installment.selected = true;
+}
 
 document.getElementById("loginButton").addEventListener("click", function () {
   var username = document.getElementById("username").value;
   var password = document.getElementById("password").value;
 
-  if (username === resultData[2].username && password === resultData[2].password) {
+  if (
+    username === resultData[2].username &&
+    password === resultData[2].password
+  ) {
     window.location.href = "index.html";
   } else {
     var error = document.getElementById("errormsg");
