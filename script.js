@@ -7,102 +7,125 @@ fetch("http://localhost:3000/data")
   })
   .then((data) => {
     resultData = data;
-    Updatethemessage();
+    // Updatethemessage();
     console.log(resultData[1].title);
   })
   .catch((error) => {
     console.error("Error fetching data:", error);
   });
 
-var helpRequested = false; // Flag to track if help has been requested
-var selectedPhoneOptionIndex = 0; // Variable to store the selected phone option index
-var selectedPeriod = 0; // Variable to store the selected installment period
+var helpRequested = false;
+var selectingCompany = false;
+var selectingProduct = false;
+var selectedPhoneOptionIndex = 0;
+var selectedCompanyIndex = 0;
+var selectedPeriod = 0;
 
-function Updatethemessage() {
-  if (!resultData) return; // Ensure resultData is available
-  // options.deals.message =
-  //   resultData[1].title +
-  //   resultData[1].body +
-  //   resultData[1].body2 +
-  //   resultData[1].body3;
-  options["call us"].message = resultData[1].body;
-}
+// function Updatethemessage() {
+//   if (!resultData) return; // Ensure resultData is available
+//   // options.deals.message =
+//   //   resultData[1].title +
+//   //   resultData[1].body +
+//   //   resultData[1].body2 +
+//   //   resultData[1].body3;
+//   options["call us"].message = resultData[1].body;
+// }
 
-var options = {
-  "call us": {
-    selected: false,
-    message: '',
+const companies = [
+  {
+    id: 1,
+    name: "Apple",
+    products: [
+      { name: "iPhone", price: "999 KD" },
+      { name: "iPad", price: "799 KD" },
+      { name: "MacBook", price: "1299 KD" },
+    ],
   },
-  deals: {
-    selected: false,
-    message:
-      '',
+  {
+    id: 2,
+    name: "Samsung",
+    products: [
+      { name: "Galaxy S", price: "899 KD" },
+      { name: "Galaxy Tab", price: "499 KD" },
+      { name: "Galaxy Book", price: "1099 KD" },
+    ],
   },
-  promotions: {
+  {
+    id: 3,
+    name: "Huawei",
+    products: [
+      { name: "Huawei P", price: "699 KD" },
+      { name: "MatePad", price: "399 KD" },
+      { name: "MateBook", price: "999 KD" },
+    ],
+  },
+  {
+    id: 4,
+    name: "Google",
+    products: [
+      { name: "Pixel", price: "799 KD" },
+      { name: "Pixelbook", price: "999 KD" },
+      { name: "Nest Hub", price: "299 KD" },
+    ],
+  },
+];
+
+const options = [
+  {
+    id: 1,
+    name: "call us",
+    selected: false,
+    message: `<a href="tel:+96512345678">+965 12345678</>`,
+  },
+  {
+    id: 2,
+    name: "deals",
+    selected: false,
+    message: "Bot: These are the deals we have.",
+  },
+  {
+    id: 3,
+    name: "promotions",
     selected: false,
     message: "Bot: These are the promotions we have.",
   },
-  installment: {
+  {
+    id: 4,
+    name: "installment",
     selected: false,
-    message:
-      "Bot: Please select a phone:<br>1. iPhone 14 Pro Max (499 KD)<br>2. Samsung 23 Ultra (399 KD)<br>3. Google Pixel (359 KD)",
+    message: "Bot: Please select a company first.",
   },
-  "samsung 24 ultra": {
-    selected: false,
-    message: "Bot: This is the promotion for Samsung 24 Ultra.",
-},
-  "iphone 15 pro max" : {
-    selected : false,
-    message : 'hi hi',
-  },
-  "iPhone 14 pro max": {
-    selected: false,
-    price: 499,
-    index: 1,
-  },
-  "samsung 23 ultra": {
-    selected: false,
-    price: 399,
-    index: 2,
-  },
-  "google pixel": {
-    selected: false,
-    price: 359,
-    index: 3,
-  },
-};
+];
 
 function calculateInstallment(phoneOptionIndex, period, salary) {
-  let optionName;
-  let price;
-
-  switch (phoneOptionIndex) {
-    case 1:
-      optionName = "iPhone 14 Pro Max";
-      price = options["iPhone 14 pro max"].price;
-      break;
-    case 2:
-      optionName = "Samsung 23 Ultra";
-      price = options["samsung 23 ultra"].price;
-      break;
-    case 3:
-      optionName = "Google Pixel";
-      price = options["google pixel"].price;
-      break;
-    default:
-      return "Bot: Invalid phone option.";
+  if (phoneOptionIndex < 1 || phoneOptionIndex > companies.length) {
+    return "Bot: Invalid phone option.";
   }
+
+  const selectedCompany = companies[selectedCompanyIndex];
+  const products = selectedCompany.products;
+
+  if (
+    selectedPhoneOptionIndex < 0 ||
+    selectedPhoneOptionIndex >= products.length
+  ) {
+    return "Bot: Invalid product option.";
+  }
+
+  const selectedProduct = products[selectedPhoneOptionIndex];
+  const optionName = selectedProduct.name;
+  const price = parseFloat(selectedProduct.price.replace(" KD", ""));
+  const monthlyPayment = (price / period).toFixed(2);
 
   if (salary < 200) {
     return "Bot: Sorry, your salary is too low to afford any phone option.";
   }
 
-  const monthlyPayment = (price / period).toFixed(2);
   return `
-    Bot: Option: ${optionName}
-    Price: ${price} KD
-    Monthly payment for ${period} months: ${monthlyPayment} KD
-    `;
+    Bot: Option: ${optionName} <br>
+    Price: ${price} KD <br>
+    Monthly payment for ${period} months: ${monthlyPayment} KD\n <br>
+  `;
 }
 
 document.addEventListener("keypress", handleKeyPress);
@@ -129,6 +152,16 @@ function sendMessage() {
   chatBox.appendChild(userMessageDiv);
   document.getElementById("user-input").value = "";
 
+  if (!helpRequested && userInput !== "help") {
+    var botMessageDiv = document.createElement("div");
+    botMessageDiv.className = "bot-message";
+    botMessageDiv.innerHTML =
+      "<strong>Bot: Please send 'help' to see the options.</strong>";
+    chatBox.appendChild(botMessageDiv);
+    chatBox.scrollTop = chatBox.scrollHeight;
+    return;
+  }
+
   if (userInput === "help") {
     helpRequested = true;
     var botMessageDiv = document.createElement("div");
@@ -141,60 +174,99 @@ function sendMessage() {
       resultData[0].body4;
     chatBox.appendChild(botMessageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Reset helpRequested flag after displaying the message
-    // helpRequested = false;
     return;
   }
 
-  if (!helpRequested) {
-    var botMessageDiv = document.createElement("div");
-    botMessageDiv.className = "bot-message";
-    botMessageDiv.innerHTML =
-      "Bot: This is wrong info. Please select 'help' to move on.";
-    chatBox.appendChild(botMessageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return;
-  }
-  if(userInput === "deals"){
-    var botMessageDiv = document.createElement("div");
-    botMessageDiv.className = "bot-message";
-    botMessageDiv.innerHTML =
-        resultData[1].title +
-        resultData[1].body +
-        resultData[1].body2 +
-        resultData[1].body3;
-    chatBox.appendChild(botMessageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
+  //////////////////////////////////
 
-    return;
-  }else if(userInput === "Samsung 24 Ultra" && options.deals.selected){
-    var phoneMessageDiv = document.createElement("div");
-    phoneMessageDiv.className = "bot-message";
-    phoneMessageDiv.innerHTML = options["samsung 24 ultra"].message;
-    chatBox.appendChild(phoneMessageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return;
-  }
-  
-  
-    if (options[userInput] && !options[userInput].selected) {
-    if (userInput === "installment") {
-      handleInstallmentOption();
+  if (helpRequested) {
+    // Handle options if help has been requested
+    var selectedOption = options.find(
+      (option) => option.name === userInput && !option.selected
+    );
+    if (selectedOption) {
+      if (userInput === "installment" || parseInt(userInput) === 4) {
+        selectingCompany = true;
+        var companyListMessage =
+          "<strong>Bot: Please select a company:\n</strong> <br>";
+        companies.forEach((company, index) => {
+          companyListMessage += `${index + 1}. ${company.name}\n <br>`;
+        });
+        var botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "bot-message";
+        botMessageDiv.innerHTML = companyListMessage;
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return;
+      } else {
+        var botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "bot-message";
+        botMessageDiv.innerHTML = selectedOption.message;
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return;
+      }
+    }
+
+    // If the user input is a number, select the option accordingly
+    if (selectingCompany) {
+      var optionIndex = parseInt(userInput);
+      if (optionIndex >= 1 && optionIndex <= companies.length) {
+        selectedCompanyIndex = optionIndex - 1;
+        selectingCompany = false;
+
+        // Display products of the selected company
+        var selectedCompany = companies[selectedCompanyIndex];
+        var companyProductMessage = `<strong>Bot: Products of ${selectedCompany.name}:\n</strong> <br>`;
+        selectedCompany.products.forEach((product, index) => {
+          companyProductMessage += `${index + 1}. ${product.name} - ${
+            product.price
+          }\n <br>`;
+        });
+        var botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "bot-message";
+        botMessageDiv.innerHTML = companyProductMessage;
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        // Set selectingProduct to true after displaying products
+        selectingProduct = true;
+        return;
+      } else {
+        // User input is not a valid company index
+        var botMessageDiv = document.createElement("div");
+        botMessageDiv.className = "bot-message";
+        botMessageDiv.innerHTML =
+          "Bot: Please select a valid company number from the list.";
+        chatBox.appendChild(botMessageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
       return;
-    } else if (options[userInput].price) {
-      selectedPhoneOptionIndex = options[userInput].index;
+    }
+  }
+
+  // Handle product selection
+  if (selectingProduct) {
+    var productIndex = parseInt(userInput);
+    if (
+      productIndex >= 1 &&
+      productIndex <= companies[selectedCompanyIndex].products.length
+    ) {
+      selectedPhoneOptionIndex = productIndex - 1;
+      selectingProduct = false; // Set selectingProduct to false after product selection
+      // Continue with installment options
+      var product =
+        companies[selectedCompanyIndex].products[selectedPhoneOptionIndex];
       var botMessageDiv = document.createElement("div");
       botMessageDiv.className = "bot-message";
-      botMessageDiv.innerHTML =
-        "Bot: Please select the installment period (6, 12, or 24 months).";
+      botMessageDiv.innerHTML = `Bot: Please select the installment duration (6, 12, 24 months) for ${product.name} (${product.price}):`;
       chatBox.appendChild(botMessageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
       return;
     } else {
       var botMessageDiv = document.createElement("div");
       botMessageDiv.className = "bot-message";
-      botMessageDiv.innerHTML = options[userInput].message;
+      botMessageDiv.innerHTML = "Bot: Please select a valid product number.";
       chatBox.appendChild(botMessageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
       return;
@@ -202,6 +274,8 @@ function sendMessage() {
   }
 
   if (
+    selectedCompanyIndex !== 0 &&
+    selectedPhoneOptionIndex !== 0 &&
     !selectedPeriod &&
     (userInput === "6" || userInput === "12" || userInput === "24")
   ) {
@@ -213,7 +287,13 @@ function sendMessage() {
     chatBox.scrollTop = chatBox.scrollHeight;
     return;
   }
-  if (selectedPhoneOptionIndex && selectedPeriod && !isNaN(userInput)) {
+
+  if (
+    selectedCompanyIndex &&
+    selectedPhoneOptionIndex &&
+    selectedPeriod &&
+    !isNaN(userInput)
+  ) {
     var salary = parseFloat(userInput);
     var installmentMessage = calculateInstallment(
       selectedPhoneOptionIndex,
@@ -226,30 +306,24 @@ function sendMessage() {
     chatBox.appendChild(botMessageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
     // Reset all conversation variables after sending salary info
+    selectedCompanyIndex = 0;
     selectedPhoneOptionIndex = 0;
     selectedPeriod = 0;
     helpRequested = false; // Reset help flag as well
     // Reset the 'selected' property of all options to false
-    Object.keys(options).forEach((key) => {
-      options[key].selected = false;
+    options.forEach((option) => {
+      option.selected = false;
     });
     return;
   }
+
+  //////////////////////////////////
+
   var botMessageDiv = document.createElement("div");
   botMessageDiv.className = "bot-message";
   botMessageDiv.innerHTML = "Bot: Please choose from the menu.";
   chatBox.appendChild(botMessageDiv);
   chatBox.scrollTop = chatBox.scrollHeight;
-}
-function handleInstallmentOption() {
-  // Display the installment message
-  var botMessageDiv = document.createElement("div");
-  botMessageDiv.className = "bot-message";
-  botMessageDiv.innerHTML = options.installment.message;
-  document.getElementById("chat-box").appendChild(botMessageDiv);
-  document.getElementById("chat-box").scrollTop = document.getElementById("chat-box").scrollHeight;
-  // Set the installment option as selected
-  options.installment.selected = true;
 }
 
 document.getElementById("loginButton").addEventListener("click", function () {
@@ -266,3 +340,10 @@ document.getElementById("loginButton").addEventListener("click", function () {
     error.innerHTML = "Invalid Username or Password! Try Again.";
   }
 });
+
+document.addEventListener("keypress", function (event) {
+  if (event.keyCode === 13) {
+    sendMessage();
+  }
+});
+fetchData();
