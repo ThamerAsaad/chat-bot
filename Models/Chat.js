@@ -13,7 +13,12 @@ const ChatSchema = new schema({
   password: String,
   price: String, 
   price2: String,
-  price3: String
+  price3: String,
+  name : String,
+  products : [{
+    name : String,
+    price : String
+  }]
 });
 
 const ChatBot = mongoose.model("data", ChatSchema);
