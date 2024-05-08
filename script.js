@@ -433,7 +433,17 @@ function sendMessage() {
   // Now handle user input for salary
   if (selectedCompanyIndex !== undefined && selectedPeriod && !isNaN(userInput)) {
     var salary = parseFloat(userInput);
-  
+    
+    if (salary < 200) {
+      // Salary is too low, display a message indicating inability to afford any phone option
+      var botMessageDiv = document.createElement("div");
+      botMessageDiv.className = "bot-message";
+      botMessageDiv.innerHTML = "Bot: Sorry, your salary is too low to afford any phone option.";
+      chatBox.appendChild(botMessageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return;
+    }
+
     // Calculate installment regardless of salary
     var installmentMessage = calculateInstallment(
       selectedPhoneOptionIndex,

@@ -23,8 +23,6 @@ mongoose
 app.get("/data", async (req, res) => {
   try {
     const result = await ChatBot.find();
-    
-
     res.json(result);
   } catch (error) {
     return error;
