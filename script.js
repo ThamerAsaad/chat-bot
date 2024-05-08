@@ -7,7 +7,6 @@ fetch("http://localhost:3000/data")
   })
   .then((data) => {
     resultData = data;
-<<<<<<< HEAD
     console.log("Fetched data:", resultData);
 
     // Update companies with fetched Apple products
@@ -15,9 +14,6 @@ fetch("http://localhost:3000/data")
 
     // Now you can call any other functions that rely on resultData or companies
     Updatethemessage();
-=======
-    // Updatethemessage();
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
     updateDealsMessage();
   })
   .catch((error) => {
@@ -182,11 +178,7 @@ const options = [
     id: 2,
     name: "deals",
     selected: false,
-<<<<<<< HEAD
     message: "Placeholder for deals message",// the data is taking from the database
-=======
-    message: "Placeholder for deals message",
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
   },
   {
     id: 3,
@@ -206,11 +198,7 @@ function updateDealsMessage() {
   if (!resultData) return;
 
   const dealsOption = options.find((option) => option.name === "deals");
-<<<<<<< HEAD
   dealsOption.message = resultData[2].title;
-=======
-  dealsOption.message = "Select your deal: <br>";
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
 
   // Iterate over each company and its products to create the deals list
   companies.forEach((company, index) => {
@@ -226,22 +214,17 @@ function updateDealsMessage() {
 
 const showDeals = (userInput) => {
   if (userInput === "cash") {
-<<<<<<< HEAD
     return `You are welcome to visit us in our showrooms hawally,salmiya,jahra,sharq and our customer service will be happy to assist you !`;
-=======
-    return `Bot: Please call us at <a href="tel:+96512345678">+965 12345678</>`;
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
   } else if (userInput === "knet") {
     window.location.href = "payment.html";
   }
   return;
 };
-<<<<<<< HEAD
-//
-=======
 
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
 function calculateInstallment(phoneOptionIndex, period, salary) {
+  if (salary < 200) {
+    return "Bot: Sorry, your salary is too low to afford any phone option.";
+  }
   if (phoneOptionIndex < 0 || phoneOptionIndex > companies.length) {
     return "Bot: Invalid phone option.";
   }
@@ -261,9 +244,7 @@ function calculateInstallment(phoneOptionIndex, period, salary) {
   const price = parseFloat(selectedProduct.price.replace(" KD", ""));
   const monthlyPayment = (price / period).toFixed(2);
 
-  if (salary < 200) {
-    return "Bot: Sorry, your salary is too low to afford any phone option.";
-  }
+  
 
   return `
     Bot: Option: ${optionName} <br>
@@ -406,14 +387,7 @@ function sendMessage() {
       // Prompt to select the installment duration
       var botMessageDiv = document.createElement("div");
       botMessageDiv.className = "bot-message";
-<<<<<<< HEAD
       botMessageDiv.innerHTML = resultData[2].body2;
-=======
-      botMessageDiv.innerHTML = `Bot: Please select the installment duration: <br>
-        6 months <br>
-        12 months <br>
-        24 months`;
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
       chatBox.appendChild(botMessageDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
       return;
@@ -438,15 +412,11 @@ function sendMessage() {
       var salaryPromptDiv = document.createElement("div");
       salaryPromptDiv.className = "bot-message";
       salaryPromptDiv.innerHTML =
-<<<<<<< HEAD
         resultData[2].body5;
-=======
-        "Bot: Please enter your salary to calculate the installment:";
->>>>>>> 7a83e783759f8f6f4e7f3ca847b4f7c52965f0df
       chatBox.appendChild(salaryPromptDiv);
       chatBox.scrollTop = chatBox.scrollHeight;
       return;
-    } else {
+    } if (salary > 200) {
       var botMessageDiv = document.createElement("div");
       botMessageDiv.className = "bot-message";
       botMessageDiv.innerHTML = calculateInstallment(
@@ -461,33 +431,34 @@ function sendMessage() {
   }
 
   // Now handle user input for salary
-  if (
-    selectedCompanyIndex &&
-    selectedPhoneOptionIndex &&
-    selectedPeriod &&
-    !isNaN(userInput)
-  ) {
+  if (selectedCompanyIndex !== undefined && selectedPeriod && !isNaN(userInput)) {
     var salary = parseFloat(userInput);
+  
+    // Calculate installment regardless of salary
     var installmentMessage = calculateInstallment(
       selectedPhoneOptionIndex,
       selectedPeriod,
       salary
     );
+  
+    // Display installment message
     var botMessageDiv = document.createElement("div");
     botMessageDiv.className = "bot-message";
     botMessageDiv.innerHTML = installmentMessage;
     chatBox.appendChild(botMessageDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
+    chatBox.appendChild(document.createElement("br"));
 
-    // Now prompt for payment method (cash or knet)
+// Prompt for payment method (cash or knet)
     var paymentPromptDiv = document.createElement("div");
     paymentPromptDiv.className = "bot-message";
-    paymentPromptDiv.innerHTML =
-      "Bot: Please select the payment method (cash or knet):";
+    paymentPromptDiv.innerHTML = "Bot: Please select the payment method (cash or knet):";
     chatBox.appendChild(paymentPromptDiv);
     chatBox.scrollTop = chatBox.scrollHeight;
-    return;
+
+  return;
   }
+  
 
   if (userInput === "cash" || userInput === "knet") {
     // Handle payment selection
